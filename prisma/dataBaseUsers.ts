@@ -54,3 +54,4 @@ export const userData: Prisma.UserCreateInput[] = [
     }
 ]
 
+
