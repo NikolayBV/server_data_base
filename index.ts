@@ -17,11 +17,23 @@ app.get('/', async (req, res) => {
 });
 
 app.get('/posts', async (req, res) => {
-    const {page, limit} = req.body;
-    const posts = await prisma.post.findMany({take: limit});
-    const comments = await prisma.comment.findMany({where: {postId: page}});
-    const count = await prisma.post.findMany();
-    res.json({posts, comments, count: count.length});
+    if(req.body.page === '1'){
+        const {page, limit} = req.body;
+        const posts = await prisma.post.findMany({take: +limit});
+        const postsId = posts.map(item => item.id);
+        const comments = await prisma.comment.findMany({where: {id: {in: postsId}}});
+        const count = await prisma.post.findMany();
+        res.send({posts, comments, count: count.length});
+    }
+    else{
+        const limit = req.body.limit;
+        const page = req.body.page + '0';
+        const posts = await prisma.post.findMany({skip: +page - +limit, take: +limit});
+        const postsId = posts.map(item => item.id);
+        const comments = await prisma.comment.findMany({where: {id: {in: postsId}}});
+        const count = await prisma.post.findMany();
+        res.json({posts, comments, count: count.length});
+    }
 });
 
 app.get('/posts/:id', async (req, res) => {
